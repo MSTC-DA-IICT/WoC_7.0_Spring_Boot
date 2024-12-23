@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/professor")
@@ -44,7 +46,14 @@ public class ProfessorController {
     }
 
     @PutMapping("/update-professor/{id}")
-    public ResponseEntity<?> updateProfessor(@PathVariable Long id, @RequestBody ProfessorDto professorDto,@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+    public ResponseEntity<?> updateProfessor(@PathVariable Long id, @RequestBody ProfessorDto professorDto, @RequestHeader(HttpHeaders.AUTHORIZATION) String token, BindingResult result) {
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+        }
         try {
             professorService.updateProfessor(id, professorDto,token);
             return ResponseEntity.ok("Professor updated successfully");

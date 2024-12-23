@@ -1,6 +1,9 @@
 package com.WoC.SpringBootCRS.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.ToString;
 
@@ -13,17 +16,16 @@ public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
     private String email;
     private String password;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @ToString.Exclude
     @JoinTable(name = "student_courses", joinColumns = @JoinColumn(name = "student_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
     private List<Course> courses;
 
-    @OneToOne(mappedBy = "student")
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private CourseRequestForm courseRequestForms;
 

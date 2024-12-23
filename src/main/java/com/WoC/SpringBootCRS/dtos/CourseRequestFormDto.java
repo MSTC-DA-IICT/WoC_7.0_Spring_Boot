@@ -2,6 +2,8 @@ package com.WoC.SpringBootCRS.dtos;
 
 import com.WoC.SpringBootCRS.entities.Course;
 import com.WoC.SpringBootCRS.entities.Student;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -10,8 +12,11 @@ import java.util.Set;
 
 @Data
 public class CourseRequestFormDto {
+
+    @NotBlank(message = "Requested course IDs cannot be empty")
     private List<Long> requestedCourseIds;
     private LocalDateTime requestedDate;
+    @NotNull(message = "Student ID cannot be null")
     private Long studentId;
 
 

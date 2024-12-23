@@ -2,10 +2,15 @@ package com.WoC.SpringBootCRS.controllers;
 
 import com.WoC.SpringBootCRS.dtos.*;
 import com.WoC.SpringBootCRS.services.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin")
@@ -15,7 +20,14 @@ public class AdminController {
     private AdminService adminService;
 
     @PostMapping("/add-student")
-    public ResponseEntity<?> addStudent(@RequestBody StudentDto studentDto) {
+    public ResponseEntity<?> addStudent(@Valid @RequestBody StudentDto studentDto, BindingResult result) {
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+        }
         try{
             adminService.addStudentByAdmin(studentDto);
             return ResponseEntity.ok("Student added successfully");
@@ -26,17 +38,32 @@ public class AdminController {
     }
 
     @PostMapping("/add-professor")
-    public ResponseEntity<?> addProfessor(@RequestBody ProfessorDto professorDto) {
+    public ResponseEntity<?> addProfessor(@RequestBody ProfessorDto professorDto,BindingResult result) {
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+        }
         try {
             adminService.addProfessorByAdmin(professorDto);
             return ResponseEntity.ok("Professor added successfully");
-        }catch (Exception e){
+        }
+        catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding professor: " + e.getMessage());
         }
     }
 
     @PostMapping("/add-semester")
-    public ResponseEntity<?> addSemester(@RequestBody SemesterDto semesterDto) {
+    public ResponseEntity<?> addSemester(@RequestBody SemesterDto semesterDto,BindingResult result) {
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+        }
         try {
             adminService.addSemesterByAdmin(semesterDto);
             return ResponseEntity.ok("Semester added successfully");
@@ -46,7 +73,14 @@ public class AdminController {
     }
 
     @PostMapping("/add-course")
-    public ResponseEntity<?> addCourse(@RequestBody CourseDto courseDto) {
+    public ResponseEntity<?> addCourse(@RequestBody CourseDto courseDto,BindingResult result) {
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+        }
         try {
             adminService.addCourseByAdmin(courseDto);
             return ResponseEntity.ok("Course added successfully");
@@ -116,7 +150,14 @@ public class AdminController {
     }
 
     @PutMapping("/update-course/{id}")
-    public ResponseEntity<?> updateCourse(@PathVariable Long id, @RequestBody CourseDto courseDto) {
+    public ResponseEntity<?> updateCourse(@PathVariable Long id, @RequestBody CourseDto courseDto, BindingResult result) {
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+        }
         try {
             adminService.updateCourseByAdmin(id, courseDto);
             return ResponseEntity.ok("Course updated successfully");
@@ -126,7 +167,14 @@ public class AdminController {
     }
 
     @PutMapping("/update-semester/{id}")
-    public ResponseEntity<?> updateSemester(@PathVariable Long id, @RequestBody SemesterDto semesterDto){
+    public ResponseEntity<?> updateSemester(@PathVariable Long id, @RequestBody SemesterDto semesterDto,BindingResult result){
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(errorMessages, HttpStatus.BAD_REQUEST);
+        }
         try {
             adminService.updateSemesterByAdmin(id, semesterDto);
             return ResponseEntity.ok("Semester updated successfully");

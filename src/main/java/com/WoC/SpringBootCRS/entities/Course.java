@@ -21,22 +21,22 @@ public class Course {
     private int remainingSeats;
     private int courseCredit;
 
-    @ManyToOne
-    @JoinColumn(name = "professor_id", nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "professor_id",nullable = false)
     @ToString.Exclude
     @JsonBackReference
     private Professor professor;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "semester_id", nullable = false)
     @ToString.Exclude
     private Semester semester;
 
-    @ManyToMany(mappedBy = "courses")
+    @ManyToMany(mappedBy = "courses",cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Student> students;
 
-    @ManyToMany(mappedBy = "requestedCourses")
+    @ManyToMany(mappedBy = "requestedCourses",cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<CourseRequestForm> courseRequestForms;
 

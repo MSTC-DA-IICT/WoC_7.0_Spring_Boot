@@ -47,6 +47,7 @@ public class AdminServiceImp implements AdminService {
     private ProfessorRepo professorRepo;
 
     @Override
+    @Transactional
     public void addAdmin(AdminDto adminDto) {
 
         String encodep = passwordEncoder.encode(adminDto.getPassword());
@@ -56,6 +57,7 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
+    @Transactional
     public void sendEmailNotificationFormDeadline() {
         List<String> studentEmails = studentRepo.findAllEmails();
         for (String studentEmail : studentEmails) {
@@ -65,6 +67,7 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
+    @Transactional
     public void addCourseByAdmin(CourseDto courseDto){
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
@@ -79,6 +82,7 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
+    @Transactional
     public void addStudentByAdmin(StudentDto studentDto) {
         try {
             String encodep = passwordEncoder.encode(studentDto.getPassword());
@@ -96,29 +100,29 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
+    @Transactional
     public void addProfessorByAdmin(ProfessorDto professorDto) {
 
         String encodep = passwordEncoder.encode(professorDto.getPassword());
         professorDto.setPassword(encodep);
 
         Professor professor = modelMapper.map(professorDto, Professor.class);
-//        Set<Course> courses = (Set<Course>) courseRepo.findAllById(professorDto.getCourseIds());
-//        professor.setCourses(courses);
-        System.out.println("Professor IS: " + professor);
+        //System.out.println("Professor IS: " + professor);
         profRepo.save(professor);
     }
 
     @Override
+    @Transactional
     public void addSemesterByAdmin(SemesterDto semesterDto) {
         Semester semester = modelMapper.map(semesterDto, Semester.class);
-        System.out.println("Semester IS: " + semester);
+        //System.out.println("Semester IS: " + semester);
         semRepo.save(semester);
     }
 
     @Override
+    @Transactional
     public void assignCourse() {
 
-        //fetch all the form sort by date
         List<CourseRequestForm> courseRequests = courseRequestFormRepo.findAll(Sort.by("requestedDate"));
 
         for(CourseRequestForm request : courseRequests){
@@ -149,6 +153,7 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
+    @Transactional
     public void sendEmailNotificationOfAssignCorseList() {
         List<Student> students = studentRepo.findAll();
         for (Student student : students){
@@ -174,54 +179,78 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
+    @Transactional
     public void deleteCourseByAdmin(Long id) {
         Course course = courseRepo.findById(id).orElseThrow(() -> new RuntimeException("Course Not Found"));
 
-        for(Student student : course.getStudents()){
+        if (course.getProfessor() != null) {
+            course.getProfessor().getCourses().remove(course);
+            course.setProfessor(null);
+        }
+
+        for (CourseRequestForm courseRequestForm : course.getCourseRequestForms()) {
+            courseRequestForm.getRequestedCourses().remove(course);
+            courseRequestFormRepo.save(courseRequestForm);
+        }
+        course.getCourseRequestForms().clear();
+
+        for (Student student : course.getStudents()) {
             student.getCourses().remove(course);
             studentRepo.save(student);
         }
-
-        Professor professor = course.getProfessor();
-        professor.getCourses().remove(course);
-        profRepo.save(professor);
+        course.getStudents().clear();
 
         Semester semester = course.getSemester();
         semester.getCourses().remove(course);
         semRepo.save(semester);
 
-        //delete Course
         courseRepo.delete(course);
     }
 
     @Override
+    @Transactional
     public void deleteStudentByAdmin(Long id) {
         Student student = studentRepo.findById(id).orElseThrow(() -> new RuntimeException("Student Not Found"));
+
         for(Course course : student.getCourses()){
             course.getStudents().remove(student);
+            course.setRemainingSeats(course.getRemainingSeats() + 1);
             courseRepo.save(course);
+        }
+
+        student.getCourses().clear();
+
+
+        if (student.getCourseRequestForms() != null) {
+            CourseRequestForm courseRequestForm = student.getCourseRequestForms();
+            courseRequestForm.getRequestedCourses().clear();
+            courseRequestFormRepo.delete(courseRequestForm);
         }
 
         //delete student
         studentRepo.delete(student);
 
-    }
-
-    @Override
-    public void deleteProfessorByAdmin(Long id) {
-        Professor professor = profRepo.findById(id).orElseThrow(()->new RuntimeException("Professor Not Found"));
-
-        for(Course course : professor.getCourses()){
-            course.getProfessor().getCourses().remove(professor);
-            courseRepo.save(course);
         }
 
-        //delete professor
-        profRepo.delete(professor);
+    @Override
+    @Transactional
+    public void deleteProfessorByAdmin(Long id) {
+         Professor professor = profRepo.findById(id).orElseThrow(() -> new RuntimeException("Professor Not Found"));
 
+         List<Course> courseList = new ArrayList<>(professor.getCourses());
+
+         for (Course course : courseList) {
+             deleteCourseByAdmin(course.getId());
+         }
+
+         professor.getCourses().clear();
+
+         // Delete the professor
+        profRepo.delete(professor);
     }
 
     @Override
+    @Transactional
     public void updateCourseByAdmin(Long id, CourseDto courseDto) {
 
         Course oldcourse = courseRepo.findById(id).orElseThrow(()->new RuntimeException("Course Not Found"));
@@ -247,6 +276,7 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
+    @Transactional
     public void updateSemesterByAdmin(Long id, SemesterDto semesterDto) {
         Semester oldSemester = semesterRepo.findById(id).orElseThrow(()->new RuntimeException("Semester Not Found"));
 

@@ -10,6 +10,7 @@ import com.WoC.SpringBootCRS.util.EmailService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -109,6 +110,7 @@ public class ProfessorServiceImp implements ProfessorService {
     }
 
     @Override
+    @Transactional
     public void updateProfessor(Long id, ProfessorDto professorDto, String token) {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);

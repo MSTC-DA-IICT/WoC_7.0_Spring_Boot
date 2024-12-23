@@ -13,6 +13,7 @@ import com.WoC.SpringBootCRS.services.StudentService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,6 +100,7 @@ public class StudentServiceImp implements StudentService {
     }
 
     @Override
+    @Transactional
     public void submitCourseRequestForm(CourseRequestFormDto courseRequestFormDto, String token) {
 
         if (token.startsWith("Bearer ")) {
@@ -135,6 +137,7 @@ public class StudentServiceImp implements StudentService {
     }
 
     @Override
+    @Transactional
     public void updateStudent(Long id, StudentDto studentDto, String token) {
 
         if (token.startsWith("Bearer ")) {
